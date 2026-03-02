@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#080d1a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="LedgrX"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml"/>
+  <title>LedgrX — Smart Expense Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════ -->
+<div class="screen active" id="authScreen">
+  <div class="setup-wrap">
+    <div class="setup-logo" style="margin-bottom:24px">
+      <div class="logo-badge" style="width:64px;height:64px;font-size:28px;border-radius:20px">💸</div>
+      <div class="logo-name">LedgrX</div>
+      <div class="logo-tag">Smart expense tracker &amp; ledger</div>
+    </div>
+
+    <!-- Email step -->
+    <div class="step-card" id="authEmailStep">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="Auth.switchMode('login')">Sign In</button>
+        <button class="auth-tab" onclick="Auth.switchMode('register')">Register</button>
+      </div>
+      <div id="regNameWrap" class="fgroup hidden">
+        <label for="regName">Full Name</label>
+        <input class="finput" type="text" id="regName" placeholder="Your full name" autocomplete="name"/>
+      </div>
+      <div class="fgroup">
+        <label for="authEmail">Email Address</label>
+        <input class="finput" type="email" id="authEmail" placeholder="you@email.com"
+               autocomplete="email" onkeydown="if(event.key==='Enter') Auth.sendOTP()"/>
+      </div>
+      <button class="btn btn-acc" id="sendOtpBtn" onclick="Auth.sendOTP()">Send OTP →</button>
+      <div class="errmsg" id="authMsg"></div>
+    </div>
+
+    <!-- OTP step -->
+    <div class="step-card hidden" id="authOtpStep">
+      <div>
+        <div class="step-label">Verify Email</div>
+        <div class="step-title">Check your inbox</div>
+        <div class="step-sub" id="otpSentTo">A 6-digit code was sent to your email.</div>
+      </div>
+      <div class="otp-boxes" id="otpBoxes">
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric" autocomplete="one-time-code"
+               oninput="Auth.otpNext(this,0)" onkeydown="Auth.otpBack(event,this,0)"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric"
+               oninput="Auth.otpNext(this,1)" onkeydown="Auth.otpBack(event,this,1)"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric"
+               oninput="Auth.otpNext(this,2)" onkeydown="Auth.otpBack(event,this,2)"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric"
+               oninput="Auth.otpNext(this,3)" onkeydown="Auth.otpBack(event,this,3)"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric"
+               oninput="Auth.otpNext(this,4)" onkeydown="Auth.otpBack(event,this,4)"/>
+        <input class="otp-box" maxlength="1" type="text" inputmode="numeric"
+               oninput="Auth.otpNext(this,5)" onkeydown="Auth.otpBack(event,this,5)"/>
+      </div>
+      <button class="btn btn-acc" id="verifyBtn" onclick="Auth.verifyOTP()">Verify &amp; Sign In</button>
+      <div class="errmsg" id="otpMsg"></div>
+      <div class="resend-row">
+        <span class="resend-timer" id="resendTimer"></span>
+        <button class="resend-btn" id="resendBtn" onclick="Auth.sendOTP(true)" disabled>Resend OTP</button>
+        <span class="resend-sep">•</span>
+        <button class="resend-btn secondary" onclick="Auth.backToEmail()">Change email</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOCK SCREEN ══════════════════════════════════ -->
+<div class="screen" id="lockScreen">
+  <div class="lock-wrap">
+    <div class="lock-avatar">👤</div>
+    <div>
+      <div class="lock-name" id="lockName">Welcome back!</div>
+      <div class="lock-email" id="lockEmail"></div>
+    </div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="numpad">
+      <button class="nkey" onclick="Lock.key('1')">1</button>
+      <button class="nkey" onclick="Lock.key('2')">2</button>
+      <button class="nkey" onclick="Lock.key('3')">3</button>
+      <button class="nkey" onclick="Lock.key('4')">4</button>
+      <button class="nkey" onclick="Lock.key('5')">5</button>
+      <button class="nkey" onclick="Lock.key('6')">6</button>
+      <button class="nkey" onclick="Lock.key('7')">7</button>
+      <button class="nkey" onclick="Lock.key('8')">8</button>
+      <button class="nkey" onclick="Lock.key('9')">9</button>
+      <button class="nkey sym ghost" id="bioKey" onclick="Lock.tryBio()"></button>
+      <button class="nkey" onclick="Lock.key('0')">0</button>
+      <button class="nkey sym" onclick="Lock.del()">⌫</button>
+    </div>
+    <button class="bio-btn hidden" id="bioBtn" onclick="Lock.tryBio()">🔐 Use Biometric</button>
+    <div class="errmsg" id="lockMsg"></div>
+    <div class="lock-actions">
+      <button class="lock-link" onclick="Lock.forgotPin()">Forgot PIN?</button>
+      <span class="lock-sep">•</span>
+      <button class="lock-link" onclick="Auth.fullLogout()">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══════════════════════════════════════ -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-logo">LedgrX</div>
+    <div class="topbar-right">
+      <div class="topbar-chip" id="syncChip" onclick="Sync.now()">
+        <div class="chip-dot offline" id="chipDot"></div>
+        <span id="chipLbl">Local</span>
+      </div>
+      <button class="tibtn" onclick="Sync.now()" title="Sync">🔄</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- HOME -->
+    <div class="tpanel active" id="tp-home">
+      <div class="dash">
+        <div class="balance-hero">
+          <div class="bal-label">Net Balance</div>
+          <div class="bal-amount"><span class="cur">₹</span><span id="dBal">0.00</span></div>
+          <div class="bal-row">
+            <div class="bal-stat"><div class="bal-stat-lbl">📈 Income</div><div class="bal-stat-val acc" id="dInc">₹0.00</div></div>
+            <div class="bal-stat"><div class="bal-stat-lbl">📉 Expense</div><div class="bal-stat-val red2" id="dExp">₹0.00</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-hdr">
+            <div class="sec-title">Categories</div>
+            <button class="sec-act" onclick="App.switchTab('ledger')">View all →</button>
+          </div>
+          <div class="qcats" id="qcats"><span class="empty-hint">No data yet</span></div>
+        </div>
+        <div>
+          <div class="sec-hdr">
+            <div class="sec-title">Recent Transactions</div>
+            <button class="sec-act" onclick="App.switchTab('ledger')">See all →</button>
+          </div>
+          <div class="txnl" id="recentList">
+            <div class="empty"><div class="empty-ico">💫</div><p>No transactions yet.<br/>Tap <strong>+</strong> to add your first!</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEDGER -->
+    <div class="tpanel" id="tp-ledger">
+      <div class="ledger-pg">
+        <div class="sbar">
+          <span class="sico">🔍</span>
+          <input type="search" placeholder="Search transactions…" id="srch" oninput="Transactions.renderLedger()"/>
+        </div>
+        <div class="fchips" id="fchips">
+          <button class="fchip active" onclick="Transactions.setFilter(this,'all')">All</button>
+          <button class="fchip" onclick="Transactions.setFilter(this,'credit')">Income</button>
+          <button class="fchip" onclick="Transactions.setFilter(this,'debit')">Expense</button>
+        </div>
+        <div id="ldgList"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="tpanel" id="tp-reports">
+      <div class="rep-pg">
+        <div class="rep-title">Reports</div>
+        <div class="qd-btns">
+          <button class="qdbtn active" id="qd7"  onclick="Reports.quickDate(7,this)">7d</button>
+          <button class="qdbtn"        id="qd30" onclick="Reports.quickDate(30,this)">30d</button>
+          <button class="qdbtn"        id="qd90" onclick="Reports.quickDate(90,this)">3mo</button>
+          <button class="qdbtn"        id="qdAll" onclick="Reports.quickDate(0,this)">All</button>
+        </div>
+        <div class="drng">
+          <input type="date" id="rfrom" onchange="Reports.applyDR()"/>
+          <div class="drng-sep">→</div>
+          <input type="date" id="rto" onchange="Reports.applyDR()"/>
+          <button class="apply-btn" onclick="Reports.applyDR()">Apply</button>
+        </div>
+        <div class="rstats">
+          <div class="rsc"><div class="rsc-lbl">Income</div><div class="rsc-val acc" id="rInc">₹0</div></div>
+          <div class="rsc"><div class="rsc-lbl">Expense</div><div class="rsc-val red2" id="rExp">₹0</div></div>
+          <div class="rsc"><div class="rsc-lbl">Net</div><div class="rsc-val" id="rNet">₹0</div></div>
+        </div>
+        <div class="ccrd"><div class="ccrd-title">📊 Income vs Expense</div><div class="cwrap"><canvas id="barC"></canvas></div></div>
+        <div class="ccrd"><div class="ccrd-title">🍩 Spending by Category</div><div class="cwrap pie"><canvas id="pieC"></canvas></div></div>
+        <div class="ccrd"><div class="ccrd-title">📈 Balance Trend</div><div class="cwrap"><canvas id="lineC"></canvas></div></div>
+        <div class="ccrd"><div class="ccrd-title">🏷 Category Breakdown</div><div class="cat-list" id="catList"></div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tpanel" id="tp-settings">
+      <div class="set-pg">
+        <div class="set-sec">
+          <div class="uprofile">
+            <div class="uavatar">👤</div>
+            <div><div class="uname" id="sName">—</div><div class="uemail" id="sEmail">—</div></div>
+          </div>
+        </div>
+        <div class="set-sec">
+          <div class="set-sec-title">Backend</div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(0,229,160,.1)">☁️</div>
+            <div class="set-info"><div class="set-ititle">Sync to Google Sheet</div><div class="set-idesc">Push all local data now</div></div>
+            <button class="sbtn" onclick="Sync.now()">Sync</button>
+          </div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(79,143,255,.1)">🔄</div>
+            <div class="set-info"><div class="set-ititle">Fetch from Sheet</div><div class="set-idesc">Pull latest cloud data</div></div>
+            <button class="sbtn" onclick="Sync.fetchAll()">Fetch</button>
+          </div>
+        </div>
+        <div class="set-sec">
+          <div class="set-sec-title">Security</div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(0,229,160,.1)">🔑</div>
+            <div class="set-info"><div class="set-ititle">Change PIN</div><div class="set-idesc">Update 4-digit app lock PIN</div></div>
+            <button class="sbtn" onclick="Settings.openPinModal()">Change</button>
+          </div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(79,143,255,.1)">🔐</div>
+            <div class="set-info"><div class="set-ititle">Biometric Unlock</div><div class="set-idesc" id="bioSetDesc">Enable fingerprint / Face ID</div></div>
+            <button class="swtog" id="bioTog" onclick="Settings.toggleBio()"></button>
+          </div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(255,77,109,.1)">🔒</div>
+            <div class="set-info"><div class="set-ititle">Lock App Now</div><div class="set-idesc">Require PIN to re-enter</div></div>
+            <button class="sbtn" onclick="Lock.lockApp()">Lock</button>
+          </div>
+        </div>
+        <div class="set-sec">
+          <div class="set-sec-title">Data</div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(255,209,102,.1)">📤</div>
+            <div class="set-info"><div class="set-ititle">Export CSV</div><div class="set-idesc">Download all transactions</div></div>
+            <button class="sbtn" onclick="Settings.exportCSV()">Export</button>
+          </div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(255,77,109,.1)">🗑️</div>
+            <div class="set-info"><div class="set-ititle">Clear Local Cache</div><div class="set-idesc">Remove cached data</div></div>
+            <button class="sbtn danger" onclick="Settings.clearLocal()">Clear</button>
+          </div>
+        </div>
+        <div class="set-sec">
+          <div class="set-sec-title">Account</div>
+          <div class="set-item">
+            <div class="sico2" style="background:rgba(255,77,109,.1)">🚪</div>
+            <div class="set-info"><div class="set-ititle">Sign Out</div><div class="set-idesc">Log out from this device</div></div>
+            <button class="sbtn danger" onclick="Auth.fullLogout()">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <nav class="bnav">
+    <button class="nbtn active" id="nb-home" onclick="App.switchTab('home')"><span class="ni">🏠</span><span>Home</span></button>
+    <button class="nbtn" id="nb-ledger" onclick="App.switchTab('ledger')"><span class="ni">📒</span><span>Ledger</span></button>
+    <button class="fabn" onclick="Transactions.openAdd()">＋</button>
+    <button class="nbtn" id="nb-reports" onclick="App.switchTab('reports')"><span class="ni">📊</span><span>Reports</span></button>
+    <button class="nbtn" id="nb-settings" onclick="App.switchTab('settings')"><span class="ni">⚙️</span><span>Settings</span></button>
+  </nav>
+</div>
+
+<!-- ══ ADD MODAL ════════════════════════════════════ -->
+<div class="overlay" id="addOverlay" onclick="Transactions.maybeClose(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">New Transaction</div>
+    <div class="type-tog">
+      <button class="tybtn credit active" id="tCredit" onclick="Transactions.setType('credit')">📈 Credit / Income</button>
+      <button class="tybtn debit"         id="tDebit"  onclick="Transactions.setType('debit')">📉 Debit / Expense</button>
+    </div>
+    <div class="amt-wrap">
+      <span class="amt-pre">₹</span>
+      <input class="amt-inp" type="number" id="mAmt" placeholder="0" inputmode="decimal"/>
+    </div>
+    <div class="fgroup mb16">
+      <label for="mDesc">Description</label>
+      <input class="finput" type="text" id="mDesc" placeholder="e.g. Salary, Grocery, Rent…"/>
+    </div>
+    <div class="frow mb16">
+      <div class="fgroup"><label for="mCat">Category</label><select id="mCat"></select></div>
+      <div class="fgroup"><label for="mDate">Date</label><input class="finput" type="date" id="mDate"/></div>
+    </div>
+    <div class="fgroup mb20">
+      <label for="mNote">Note <span style="color:var(--txt3);font-size:11px">(optional)</span></label>
+      <input class="finput" type="text" id="mNote" placeholder="Any extra notes…"/>
+    </div>
+    <button class="btn btn-acc" onclick="Transactions.save()">Add Transaction</button>
+  </div>
+</div>
+
+<!-- ══ DETAIL MODAL ══════════════════════════════════ -->
+<div class="overlay" id="detOverlay" onclick="Transactions.maybeCloseDet(event)">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Transaction Details</div>
+    <div id="detContent"></div>
+  </div>
+</div>
+
+<!-- ══ PIN MODAL ════════════════════════════════════ -->
+<div class="pmod" id="pinModal">
+  <div class="pmod-box">
+    <div class="pmod-title">🔑 Change PIN</div>
+    <div class="fgroup" style="width:100%"><label>Current PIN</label><input class="finput" type="password" id="cpOld" placeholder="••••" maxlength="4" inputmode="numeric"/></div>
+    <div class="fgroup" style="width:100%"><label>New PIN</label><input class="finput" type="password" id="cpNew" placeholder="••••" maxlength="4" inputmode="numeric"/></div>
+    <div class="fgroup" style="width:100%"><label>Confirm PIN</label><input class="finput" type="password" id="cpConf" placeholder="••••" maxlength="4" inputmode="numeric"/></div>
+    <div class="errmsg" id="cpMsg"></div>
+    <div style="display:flex;gap:10px;width:100%">
+      <button class="btn btn-ghost" onclick="Settings.closePinModal()" style="flex:1">Cancel</button>
+      <button class="btn btn-acc" onclick="Settings.doChangePin()" style="flex:2">Update PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ SCRIPTS ══════════════════════════════════════ -->
+<!-- config.js MUST load first — it defines CONFIG.SCRIPT_URL -->
+<script src="js/config.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/lock.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+</body>
+</html>

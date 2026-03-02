@@ -1,0 +1,27 @@
+{
+  "name": "LedgrX — Smart Expense Tracker",
+  "short_name": "LedgrX",
+  "description": "Personal expense tracker and ledger with Google Sheet sync",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#080d1a",
+  "background_color": "#080d1a",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "screenshots": []
+}
